@@ -1,52 +1,55 @@
-# Ether Deposit, Withdrawal, and Check
+# Budget Tracker Smart Contract
 
-This Solidity program demonstrates a basic smart contract for managing Ether deposits and withdrawals. It includes features for secure transactions, balance tracking, and contract balance verification by the owner.
+This Solidity program demonstrates a simple **budget tracker** smart contract. It allows users to manage their budget by adding income, subtracting expenses, and resetting the balance. The contract includes basic functionality to ensure the balance is updated correctly and contains error handling using Solidity's `require`, `assert`, and `revert` functions.
 
 ## Description
 
-The **Smart Contract Project** is a foundational contract written in Solidity, showcasing essential functionalities for managing user deposits and withdrawals. It allows users to deposit Ether, withdraw funds within their balance limits, and ensures only the contract owner can check the contract's total balance.
+The **Budget Tracker** contract is designed to manage a personal budget. The contract allows users to:
+- **Add Income**: Add positive amounts to the balance.
+- **Subtract Expenses**: Subtract an expense if it's within the current balance.
+- **Reset Balance**: Reset the balance to zero to indicate the start of a new budget cycle.
+
+## Features
+- **Add Income**: Users can deposit any positive amount to increase their balance.
+- **Subtract Expense**: Users can subtract an expense that is less than or equal to their balance.
+- **Reset Balance**: Users can reset the balance to zero, with checks in place to prevent resetting an already-zero balance.
 
 ## Getting Started
 
 ### Installing
 
 1. Open [Remix IDE](https://remix.ethereum.org/), an online Solidity development environment.
-2. Create a new file in Remix and save it with a `.sol` extension (e.g., `SmartContractProject.sol`).
+2. Create a new file in Remix and save it with a `.sol` extension (e.g., `budgetTracker.sol`).
 3. Copy and paste the provided code into the file.
+
 ```solidity
 // SPDX-License-Identifier: MIT
 // 202111212 - Joshua Renniel Pineda - TokwaNiDahyun
+// budget tracker
 pragma solidity 0.8.26;
 
-contract SmartContractProject {
-    address public owner;
-    mapping(address => uint) public balances;
+contract budgetTracker {
+    uint public balance;
 
-    constructor() {
-        owner = msg.sender;
+    // Add income to the balance
+    function addIncome(uint _amount) public {
+        require(_amount > 0, "Income must be greater than zero");
+        balance += _amount;
     }
 
-    function deposit() public payable {
-        require(msg.value >= 1 ether, "Please deposit at least 1 Ether");
-        balances[msg.sender] += msg.value;
+    // Subtract an expense from the balance
+    function subtractExpense(uint _expense) public {
+        assert(balance > 0); // Ensure there is a balance to subtract from
+        assert(_expense > 0 && _expense <= balance); // Ensure the expense is valid
+        balance -= _expense;
     }
 
-    function withdraw(uint _amountInEther) public {
-        uint _amountInWei = _amountInEther * 1 ether;// convert Ether to Wei
-        
-        assert(_amountInEther > 0);
-
-        (bool success, ) = msg.sender.call{value: _amountInWei}("");
-        if (!success) {
-            revert("Transaction failed. Please try again later.");
+    // Reset the balance to zero
+    function resetBalance() public {
+        if (balance == 0) {
+            revert("Balance is already zero, cannot reset");
         }
-    }
-
-    function checkContractBalance() public view returns (uint) {
-        if (msg.sender != owner) {
-            revert("Only the owner can check the contract balance");
-        }
-        return address(this).balance / 1 ether;
+        balance = 0;
     }
 }
 ```
@@ -65,16 +68,20 @@ Follow these steps to compile, deploy, and use the contract:
 3. Deploy the contract by clicking the **Deploy** button.
 
 #### Interact with the Contract:
-- **Deposit Ether:**
-  1. Enter the amount of Ether to deposit in the value field.
-  2. Click the `deposit` button to send Ether to the contract.
-- **Withdraw Ether:**
-  1. Enter the amount (in Ether) to withdraw in the `_amountInEther` field.
-  2. Click the `withdraw` button.
-- **Check Contract Balance:**
-  1. Only the contract owner can use this function.
-  2. Click the `checkContractBalance` button to view the contract's total balance.
-
+- **Add Income:**
+  1. Enter a positive amount to add as income in the _amount field.
+  2. Click the `addIncome` button to increase the balance.
+- **Subtract Expense:**
+  1. Enter the amount to subtract as an expense in the _expense field.
+  2. Click the `subtractExpense` button to decrease the balance.
+- **Reset Balance:**
+  1. Click the `resetBalance` button to reset the balance to zero (will only work if the balance is not zero).
+ 
+#### Example Use Case:
+  1. `Add Income:` The user deposits 100 units into their budget using the addIncome() function.
+  2. `Subtract Expense:` The user subtracts 50 units using the subtractExpense() function.
+  3. `Reset Balance:` Once the budget cycle is finished, the user can reset the balance to zero using the resetBalance() function.
+     
 ## Authors
 
 Metacrafter Joshua 
